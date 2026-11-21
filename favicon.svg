@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx=".36" cy=".24" r=".85"><stop stop-color="#263b57"/><stop offset="1" stop-color="#080f1f"/></radialGradient>
+    <linearGradient id="front" x2=".25" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#ff5656"/><stop offset=".44" stop-color="#eb2639"/><stop offset="1" stop-color="#b30925"/></linearGradient>
+    <linearGradient id="top" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#ff7573"/><stop offset="1" stop-color="#dc1830"/></linearGradient>
+    <linearGradient id="side" x2=".3" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#bd1029"/><stop offset="1" stop-color="#74051c"/></linearGradient>
+    <filter id="shadow" x="-.25" y="-.4" width="1.5" height="1.9"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h512v512H0z"/>
+  <ellipse cx="257" cy="423" rx="184" ry="40" fill="#030711" opacity=".8" filter="url(#shadow)"/>
+  <path d="M180 150v-35q0-35 36-35h80q36 0 36 35v35h-27v-32q0-12-12-12h-74q-12 0-12 12v32z" fill="url(#top)" stroke="#a91127" stroke-width="4"/>
+  <path d="M92 151h321q55 0 55 53v165q0 57-55 57H94q-50 0-50-56V207q0-56 48-56Z" fill="url(#side)"/>
+  <path d="m49 190 19-29q13-18 39-18h300q32 0 46 28l13 26-38 19H70Z" fill="url(#top)"/>
+  <rect x="44" y="175" width="398" height="239" rx="42" fill="url(#front)" stroke="#ff6569" stroke-width="3"/>
+  <path d="M70 209q7-18 29-18h281q22 0 33 14" fill="none" stroke="#ffc5ba" stroke-width="4" opacity=".44" stroke-linecap="round"/>
+  <path d="M210 205h66v56h55v65h-55v56h-66v-56h-55v-65h55z" fill="#790d25" opacity=".42" transform="translate(0 5)"/>
+  <path d="M210 205h66v56h55v65h-55v56h-66v-56h-55v-65h55z" fill="#fff"/>
+</svg>

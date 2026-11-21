@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1425">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="VOLTYRO Leki PRO">
+<title>VOLTYRO Leki PRO</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+<script src="app.js" type="module"></script>
+</head>
+<body>
+<main class="shell">
+  <header class="brand">
+    <img src="favicon.svg" width="52" height="52" alt="">
+    <div><h1>VOLTYRO <span>Leki PRO</span></h1><time id="today"></time></div>
+  </header>
+  <p id="notice" role="status" aria-live="polite" hidden></p>
+  <section class="dose-grid" aria-label="Dzisiejsze potwierdzenia">
+    <article class="dose morning">
+      <div class="dose-head"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg><h2>Leki rano</h2><span id="morning-plan" class="plan"></span></div>
+      <button class="confirm" data-dose="morning" type="button">Potwierdź przyjęcie</button>
+      <div class="dose-foot"><span id="morning-note"></span><button data-undo="morning" type="button" hidden>Cofnij</button></div>
+    </article>
+    <article class="dose evening">
+      <div class="dose-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.5A8.6 8.6 0 0 1 8.5 4 8.7 8.7 0 1 0 20 15.5Z"/><path d="M17.5 4v4m-2-2h4"/></svg><h2>Leki wieczorem</h2><span id="evening-plan" class="plan"></span></div>
+      <button class="confirm" data-dose="evening" type="button">Potwierdź przyjęcie</button>
+      <div class="dose-foot"><span id="evening-note"></span><button data-undo="evening" type="button" hidden>Cofnij</button></div>
+    </article>
+  </section>
+  <section class="panel calendar" aria-labelledby="calendar-heading">
+    <div class="calendar-head">
+      <div><h2 id="calendar-heading">Kalendarz</h2><p id="month" aria-live="polite"></p></div>
+      <div class="month-nav"><button id="prev" type="button" aria-label="Poprzedni miesiąc">‹</button><button id="next" type="button" aria-label="Następny miesiąc">›</button></div>
+    </div>
+    <div class="days-head" aria-hidden="true"><span>Pon</span><span>Wt</span><span>Śr</span><span>Czw</span><span>Pt</span><span>Sob</span><span>Ndz</span></div>
+    <div id="days" class="days"></div>
+    <div class="legend"><span><i class="dot taken"></i>Potwierdzone</span><span><i class="dot"></i>Brak potwierdzenia</span><span>Kropki od lewej: rano i wieczorem</span></div>
+  </section>
+  <details class="panel settings">
+    <summary>Ustawienia i kopia zapasowa</summary>
+    <form id="settings">
+      <div class="times"><label>Godzina rano<input name="morning" type="time" required></label><label>Godzina wieczorem<input name="evening" type="time" required></label></div>
+      <p>Godziny są wyświetlane na kartach. Aplikacja nie wysyła powiadomień.</p>
+      <button type="submit">Zapisz godziny</button>
+    </form>
+    <div class="backup"><button id="export" type="button">Eksportuj JSON</button><button id="import" type="button">Importuj kopię</button><input id="file" type="file" accept=".json,application/json" hidden></div>
+    <p>Dane są zapisywane wyłącznie na tym urządzeniu. Usunięcie danych aplikacji lub przeglądarki może spowodować utratę historii. Zachowaj plik kopii w prywatnym miejscu.</p>
+  </details>
+  <footer>To dziennik potwierdzeń. Brak zapisu nie oznacza pominięcia leku. Jeśli nie wiesz, czy dawka została przyjęta, postępuj zgodnie z zaleceniami lekarza lub farmaceuty.</footer>
+</main>
+<dialog id="dialog" aria-labelledby="dialog-title">
+  <h2 id="dialog-title"></h2><div id="dialog-body"></div>
+  <form method="dialog" class="dialog-actions"><button id="cancel" value="cancel" autofocus>Zamknij</button><button id="accept" value="accept" hidden>Potwierdź</button></form>
+</dialog>
+</body>
+</html>
