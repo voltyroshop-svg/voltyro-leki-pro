@@ -63,3 +63,26 @@ summary{display:flex;align-items:center;gap:9px;list-style:none}
 summary::-webkit-details-marker{display:none}
 summary::before{content:'';width:7px;height:7px;flex:none;border-right:2px solid var(--violet);border-bottom:2px solid var(--violet);transform:rotate(-45deg)}
 details[open]>summary::before{transform:rotate(45deg)}
+
+.organizer{padding:13px;margin-bottom:14px}
+.organizer-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.organizer summary{min-height:44px;padding:9px 0;cursor:pointer;font-weight:700}
+.organizer .dose-grid{margin:8px 0 0}
+#medicine-doses,#medicine-list,#medicine-times,#medicine-form{display:grid;gap:9px}
+.medicine-card{min-width:0;border:1px solid var(--line);border-radius:12px;padding:10px;background:#17253b;overflow-wrap:anywhere}
+.medicine-card h3{margin:0;font-size:1.02rem}
+.organizer-note{color:var(--muted)}
+.medicine-status{margin-top:5px;font-weight:620}
+.medicine-status.taken{color:var(--green)}
+.medicine-status.skipped,.dot.skipped{color:var(--gold)}
+.dot.skipped{background:var(--gold)}
+.medicine-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.take-medicine{background:#163a31;color:var(--green);border-color:#377957}
+#medicine-form{margin-top:9px}
+#medicine-form label{display:grid;gap:4px;min-width:0}
+#medicine-form input{width:100%;min-width:0;min-height:44px;padding:7px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--text);font-size:16px}
+#medicine-form fieldset{min-width:0;margin:0;padding:8px;border:1px solid var(--line);border-radius:9px}
+#add-time{margin-top:7px}
+.medicine-time{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:end}
+#medicine-error{color:var(--gold)}

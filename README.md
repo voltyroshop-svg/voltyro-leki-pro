@@ -1,6 +1,8 @@
 # VOLTYRO Leki PRO
 
-Prywatny dziennik porannych i wieczornych potwierdzeń. Godziny są informacyjne. Historia jest zapisywana w pamięci przeglądarki, a aplikacja po przygotowaniu Service Workera może zapisywać ją także offline.
+Lokalny organizer leków z planem dnia, indywidualnymi godzinami i historią przyjęć oraz pominięć. Godziny są informacyjne. Historia jest zapisywana w pamięci przeglądarki, również offline po pierwszym załadowaniu.
+
+W sekcji **Moje leki na dziś** wybierz **Dodaj lek**. Liczbę godzin można zmienić w edytorze. Wstrzymanie usuwa oczekujące dawki z planu do czasu wznowienia. Usunięcie z planu archiwizuje lek, a istniejące wpisy nadal widać w historii. Kalendarz przechowuje planowaną godzinę oraz czas ręcznego zapisania przyjęcia lub pominięcia.
 
 ## Uruchomienie lokalne
 
@@ -24,7 +26,15 @@ Na Androidzie otwórz adres HTTPS w Chrome i wybierz **Zainstaluj aplikację** l
 
 ## Kopia zapasowa
 
-W ustawieniach wybierz **Eksportuj JSON** i zapisz plik w prywatnym miejscu. Na drugim urządzeniu wybierz **Importuj kopię**. Po zatwierdzeniu import zastępuje historię i godziny. Usunięcie danych aplikacji lub przeglądarki może usunąć historię.
+W ustawieniach wybierz **Eksportuj JSON** i zapisz plik w prywatnym miejscu. Na drugim urządzeniu wybierz **Importuj kopię**. Eksport zapisuje format v2. Import przyjmuje formaty v1 i v2. Po zatwierdzeniu zastępuje bieżący zapis, poprzednią wersję zachowując lokalnie pod kluczem `voltyro-leki-pro.v2.before-import`. Przed importem warto wyeksportować własną kopię. Usunięcie danych aplikacji lub przeglądarki może usunąć historię.
+
+Migracja zachowuje rekord `voltyro-leki-pro.v1` i jego kopię `voltyro-leki-pro.v1.migration-backup`. Przeniesione potwierdzenia są wyświetlane jako wpisy rano i wieczorem, ponieważ v1 nie przechowywała nazw leków.
+
+## Testy
+
+```sh
+node --test test/organizer.test.mjs
+```
 
 ## Pliki
 

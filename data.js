@@ -40,3 +40,93 @@ export function parseBackup(text, today) {
   }
   return data;
 }
+
+export const legacyStorageKey = 'voltyro-leki-pro.v1';
+export const storageKey = 'voltyro-leki-pro.v2';
+export const legacyBackupKey = legacyStorageKey + '.migration-backup';
+
+export function organizerBackup(text, today) {
+  const source = JSON.parse(text);
+  if (source?.version === 1) return {...emptyOrganizer(), ...parseBackup(text, today), version: 2};
+  if (!isRecord(source) || source.version !== 2 || !Array.isArray(source.medicines) || !isRecord(source.records))
+    throw new Error('Nieprawidłowy format kopii organizera.');
+  const legacy = parseBackup(JSON.stringify({version: 1, times: source.times, days: source.days}), today);
+  const ids = new Set();
+  const idValid = id => typeof id === 'string' && /^[a-zA-Z0-9-]{1,80}$/.test(id);
+  const labelValid = (label, max) => typeof label === 'string' && label.trim().length > 0 && label.length <= max;
+  const medicines = source.medicines.map(med => {
+    if (!isRecord(med) || !idValid(med.id) || ids.has(med.id) || !labelValid(med.name, 120) ||
+        !labelValid(med.dose, 80) || !['active', 'paused', 'archived'].includes(med.state) ||
+        !Array.isArray(med.slots) || !med.slots.length) throw new Error('Nieprawidłowy lek w kopii.');
+    ids.add(med.id);
+    const slotIds = new Set(), hours = new Set();
+    const slots = med.slots.map(slot => {
+      if (!isRecord(slot) || !idValid(slot.id) || slotIds.has(slot.id) || !isTime(slot.time) || hours.has(slot.time))
+        throw new Error('Nieprawidłowe godziny leku.');
+      slotIds.add(slot.id);
+      hours.add(slot.time);
+      return {id: slot.id, time: slot.time};
+    });
+    return {id: med.id, name: med.name, dose: med.dose, state: med.state, slots};
+  });
+  const records = {};
+  for (const [date, entries] of Object.entries(source.records)) {
+    if (!validDateKey(date) || today && date > today || !Array.isArray(entries)) throw new Error('Nieprawidłowy dzień historii.');
+    const unique = new Set();
+    records[date] = entries.map(item => {
+      const key = item?.medicineId + ':' + item?.slotId;
+      if (!isRecord(item) || !ids.has(item.medicineId) || !idValid(item.slotId) || unique.has(key) ||
+          !labelValid(item.name, 120) || !labelValid(item.dose, 80) || !isTime(item.plannedTime) ||
+          !['taken', 'skipped'].includes(item.state) || !isTime(item.recordedTime) ||
+          typeof item.recordedAt !== 'string' || !Number.isFinite(Date.parse(item.recordedAt)))
+        throw new Error('Nieprawidłowe potwierdzenie w kopii.');
+      unique.add(key);
+      const {medicineId, slotId, name, dose, plannedTime, state, recordedAt, recordedTime} = item;
+      return {medicineId, slotId, name, dose, plannedTime, state, recordedAt, recordedTime};
+    });
+  }
+  return {...legacy, version: 2, medicines, records};
+}
+
+export const emptyOrganizer = () => ({...emptyData(), version: 2, medicines: [], records: {}});
+
+export function readOrganizer(storage) {
+  const current = storage.getItem(storageKey);
+  if (current !== null) return organizerBackup(current);
+  const old = storage.getItem(legacyStorageKey);
+  if (old === null) return emptyOrganizer();
+  const migrated = organizerBackup(old);
+  if (storage.getItem(legacyBackupKey) === null) storage.setItem(legacyBackupKey, old);
+  storage.setItem(storageKey, JSON.stringify(migrated));
+  return migrated;
+}
+
+export function plannedDoses(data, date) {
+  const entries = new Map((data.records[date] ?? []).map(item => [item.medicineId + ':' + item.slotId, item]));
+  for (const med of data.medicines) {
+    if (med.state !== 'active') continue;
+    for (const slot of med.slots) {
+      const key = med.id + ':' + slot.id;
+      if (!entries.has(key)) entries.set(key, {medicineId: med.id, slotId: slot.id,
+        name: med.name, dose: med.dose, plannedTime: slot.time, state: 'pending'});
+    }
+  }
+  return [...entries.values()].sort((a, b) => a.plannedTime.localeCompare(b.plannedTime) ||
+    a.name.localeCompare(b.name, 'pl'));
+}
+
+export function setDoseState(data, date, dose, state, now = new Date()) {
+  const entries = data.records[date] ?? [];
+  const index = entries.findIndex(item => item.medicineId === dose.medicineId && item.slotId === dose.slotId);
+  if (state === 'pending') {
+    if (index >= 0) entries.splice(index, 1);
+    if (!entries.length) delete data.records[date];
+    return;
+  }
+  const med = data.medicines.find(item => item.id === dose.medicineId && item.state === 'active');
+  const slot = med?.slots.find(item => item.id === dose.slotId);
+  if (index >= 0 || !slot || date !== dayKey(now)) return;
+  data.records[date] = entries;
+  entries.push({medicineId: med.id, slotId: slot.id, name: med.name, dose: med.dose, plannedTime: slot.time,
+    state, recordedAt: now.toISOString(), recordedTime: timeKey(now)});
+}
