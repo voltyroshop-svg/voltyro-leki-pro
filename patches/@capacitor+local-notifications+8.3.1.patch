@@ -1,0 +1,30 @@
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/kotlin/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.kt b/node_modules/@capacitor/local-notifications/android/src/main/kotlin/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.kt
+index 52def58..a7218e7 100644
+--- a/node_modules/@capacitor/local-notifications/android/src/main/kotlin/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.kt
++++ b/node_modules/@capacitor/local-notifications/android/src/main/kotlin/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.kt
+@@ -63,13 +63,23 @@ class TimedNotificationPublisher : BroadcastReceiver() {
+         val storedNotification = NotificationStorage(context).getSavedNotificationAsJSObject(id.toString())
+         val wantsExact = storedNotification?.getBoolean("isExactNotification", true) ?: true
+         val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
++        // Preserve the initial alarm's wake/idle behavior on every calendar recurrence.
++        val allowWhileIdle = storedNotification?.getJSObject("schedule")?.getBoolean("allowWhileIdle", false) == true
+         if (wantsExact && canExact) {
+-            alarmManager.setExact(AlarmManager.RTC, trigger, pendingIntent)
++            if (allowWhileIdle) {
++                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
++            } else {
++                alarmManager.setExact(AlarmManager.RTC, trigger, pendingIntent)
++            }
+         } else {
+             if (wantsExact) {
+                 Logger.warn("Capacitor/LocalNotification", "Exact alarms not allowed in user settings.  Notification scheduled with non-exact alarm.")
+             }
+-            alarmManager.set(AlarmManager.RTC, trigger, pendingIntent)
++            if (allowWhileIdle) {
++                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pendingIntent)
++            } else {
++                alarmManager.set(AlarmManager.RTC, trigger, pendingIntent)
++            }
+         }
+         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
+         Logger.debug(Logger.tags("LN"), "notification " + id + " will next fire at " + sdf.format(Date(trigger)))

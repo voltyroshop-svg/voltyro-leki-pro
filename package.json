@@ -6,7 +6,8 @@
     "test": "node --test",
     "mobile:build": "node scripts/build-mobile.mjs",
     "mobile:sync": "npm run mobile:build && cap sync",
-    "android:apk": "npm run mobile:build && cap sync android && cd android && ./gradlew assembleDebug"
+    "android:apk": "npm run mobile:build && cap sync android && cd android && ./gradlew assembleDebug",
+    "postinstall": "patch-package --error-on-fail"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,8 @@
   },
   "devDependencies": {
     "@capacitor/cli": "8.6.2",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "patch-package": "8.0.1"
   },
   "private": true,
   "engines": {
