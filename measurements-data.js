@@ -1,6 +1,8 @@
 export const measurementsKey = 'voltyro-leki-pro.measurements.v1';
 export const glucoseFactor = 18.01559;
 export const glucoseContexts = {'fasting':'Na czczo','before':'Przed posiłkiem','after':'Po posiłku','other':'Inny'};
+export const wellbeingLabels = {good:'Dobrze',fair:'Średnio',poor:'Źle'};
+export const medicationTimingLabels = {before:'Przed lekami',after:'Po lekach',na:'Nie dotyczy'};
 export const emptyMeasurements = () => ({pressure: [], glucose: []});
 
 export function glucoseIn(value, from, to) {
@@ -18,18 +20,23 @@ export function readMeasurement(type, entry) {
   const number = value => typeof value === 'number' && Number.isFinite(value) && value > 0;
   if (!entry || !validLocalDateTime(entry.at) || typeof entry.id !== 'string' ||
       !/^[a-zA-Z0-9-]{1,80}$/.test(entry.id)) throw Error('Nieprawidłowa data, godzina lub identyfikator.');
-  const {id, at} = entry;
+  const {id,at,note='',wellbeing='',medicationTiming=''}=entry;
+  if(typeof note!=='string'||note.length>500||
+    wellbeing!==''&&(typeof wellbeing!=='string'||!Object.hasOwn(wellbeingLabels,wellbeing))||
+    medicationTiming!==''&&(typeof medicationTiming!=='string'||!Object.hasOwn(medicationTimingLabels,medicationTiming))) {
+    throw Error('Sprawdź notatkę i informacje dodatkowe.');
+  }
+  const contextFields={...(wellbeing?{wellbeing}:{}),...(medicationTiming?{medicationTiming}:{})};
   if (type === 'pressure') {
-    const {systolic, diastolic, pulse, note = ''} = entry;
-    if (![systolic, diastolic, pulse].every(value => Number.isSafeInteger(value) && value > 0) ||
-        typeof note !== 'string' || note.length > 500) throw Error('Wpisz dodatnie liczby całkowite dla ciśnienia i pulsu.');
-    return {id, at, systolic, diastolic, pulse, note};
+    const {systolic,diastolic,pulse}=entry;
+    if (![systolic, diastolic, pulse].every(value => Number.isSafeInteger(value) && value > 0) ) throw Error('Wpisz dodatnie liczby całkowite dla ciśnienia i pulsu.');
+    return {id, at, systolic, diastolic, pulse,note,...contextFields};
   }
   if (type === 'glucose') {
     const {value, unit, context} = entry;
     if (!number(value) || !['mg/dl','mmol/l'].includes(unit) || !Object.hasOwn(glucoseContexts, context) ||
         !Number.isFinite(glucoseIn(value, unit, 'mg/dl'))) throw Error('Wpisz dodatni wynik, jednostkę i rodzaj pomiaru.');
-    return {id, at, value, unit, context};
+    return {id, at, value,unit,context,...(note?{note}:{}),...contextFields};
   }
   throw Error('Nieznany rodzaj pomiaru.');
 }

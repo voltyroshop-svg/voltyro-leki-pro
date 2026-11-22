@@ -105,3 +105,12 @@ details[open]>summary::before{transform:rotate(45deg)}
 .measurement-legend span{padding-inline-start:4px}
 .measurement-record{margin-block:7px}
 .measurement-record p{color:var(--muted)}
+
+.pressure-readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}
+.reading-control{display:grid;gap:6px;min-width:0}
+.reading-control label{font-weight:700}
+.reading-stepper{display:grid;grid-template-columns:minmax(48px,3.25rem) minmax(0,1fr) minmax(48px,3.25rem);gap:6px;align-items:stretch}
+.reading-stepper button,.measurement-panel .measurement-actions button{min-height:52px;font-size:1.125rem}
+.reading-stepper button{font-size:1.5rem;padding:0;touch-action:manipulation}
+.measurement-panel .reading-stepper input{min-height:56px;font-size:1.5rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.measurement-panel :is(input,select,textarea){font-size:1.0625rem;scroll-margin-block:16px}

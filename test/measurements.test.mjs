@@ -34,3 +34,12 @@ test('7 and 30 days include today and exclude out-of-window measurements',()=>{
   assert.deepEqual(chartRows(rows,7,now),rows.slice(3,5));
   assert.deepEqual(chartRows(rows,30,now),rows.slice(1,5));
 });
+
+test('backups preserve optional context and accept older readings without adding defaults',()=>{
+  const older={id:'old',at:'2026-11-22T08:00',value:91,unit:'mg/dl',context:'fasting'};
+  const newer={...older,id:'new',value:5.55,unit:'mmol/l',note:'Test',wellbeing:'fair',medicationTiming:'after'};
+  const backup={pressure:[],glucose:[older,newer]};
+  assert.deepEqual(parseMeasurements(JSON.parse(JSON.stringify(backup))),backup);
+  assert.throws(()=>readMeasurement('glucose',{...newer,wellbeing:'unknown'}));
+  assert.throws(()=>readMeasurement('glucose',{...newer,medicationTiming:['after']}));
+});

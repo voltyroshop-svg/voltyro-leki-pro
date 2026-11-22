@@ -63,10 +63,35 @@
   <section id="pressure" class="panel measurement-panel" hidden aria-labelledby="pressure-title">
     <h2 id="pressure-title">Ciśnienie i puls</h2>
     <form data-measure-form="pressure">
+      <div class="pressure-readings">
+        <div class="reading-control">
+          <label for="reading-systolic">Górne (SYS) · mmHg</label>
+          <div class="reading-stepper">
+            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Górne (SYS) · mmHg">−</button>
+            <input id="reading-systolic" name="systolic" type="text" inputmode="numeric" autocomplete="off" required>
+            <button type="button" data-adjust="1" aria-label="Zwiększ: Górne (SYS) · mmHg">+</button>
+          </div>
+        </div>
+        <div class="reading-control">
+          <label for="reading-diastolic">Dolne (DIA) · mmHg</label>
+          <div class="reading-stepper">
+            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Dolne (DIA) · mmHg">−</button>
+            <input id="reading-diastolic" name="diastolic" type="text" inputmode="numeric" autocomplete="off" required>
+            <button type="button" data-adjust="1" aria-label="Zwiększ: Dolne (DIA) · mmHg">+</button>
+          </div>
+        </div>
+        <div class="reading-control">
+          <label for="reading-pulse">Puls · uderz./min</label>
+          <div class="reading-stepper">
+            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Puls · uderz./min">−</button>
+            <input id="reading-pulse" name="pulse" type="text" inputmode="numeric" autocomplete="off" required>
+            <button type="button" data-adjust="1" aria-label="Zwiększ: Puls · uderz./min">+</button>
+          </div>
+        </div>
+      </div>
       <div class="measurement-fields">
-        <label>Skurczowe (mmHg)<input name="systolic" type="number" inputmode="numeric" min="1" step="1" required></label>
-        <label>Rozkurczowe (mmHg)<input name="diastolic" type="number" inputmode="numeric" min="1" step="1" required></label>
-        <label>Puls (uderz./min)<input name="pulse" type="number" inputmode="numeric" min="1" step="1" required></label>
+        <label>Samopoczucie<select name="wellbeing"><option value="">Wybierz (opcjonalnie)</option><option value="good">Dobrze</option><option value="fair">Średnio</option><option value="poor">Źle</option></select></label>
+        <label>Pomiar a leki<select name="medicationTiming"><option value="">Wybierz (opcjonalnie)</option><option value="before">Przed lekami</option><option value="after">Po lekach</option><option value="na">Nie dotyczy</option></select></label>
       </div>
       <label>Data i godzina<input name="at" type="datetime-local" required></label>
       <label>Notatka (opcjonalna)<textarea name="note" maxlength="500" rows="2"></textarea></label>
@@ -77,12 +102,24 @@
   <section id="glucose" class="panel measurement-panel" hidden aria-labelledby="glucose-title">
     <h2 id="glucose-title">Poziom cukru</h2>
     <form data-measure-form="glucose">
+      <div class="reading-control">
+          <label for="reading-value">Wynik pomiaru</label>
+          <div class="reading-stepper">
+            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Wynik pomiaru">−</button>
+            <input id="reading-value" name="value" type="text" inputmode="decimal" autocomplete="off" required>
+            <button type="button" data-adjust="1" aria-label="Zwiększ: Wynik pomiaru">+</button>
+          </div>
+        </div>
       <div class="measurement-fields">
-        <label>Wynik<input name="value" type="text" inputmode="decimal" required></label>
         <label>Jednostka<select name="unit"><option>mg/dl</option><option>mmol/l</option></select></label>
         <label>Rodzaj pomiaru<select name="context"><option value="fasting">Na czczo</option><option value="before">Przed posiłkiem</option><option value="after">Po posiłku</option><option value="other">Inny</option></select></label>
       </div>
+      <div class="measurement-fields">
+        <label>Samopoczucie<select name="wellbeing"><option value="">Wybierz (opcjonalnie)</option><option value="good">Dobrze</option><option value="fair">Średnio</option><option value="poor">Źle</option></select></label>
+        <label>Pomiar a leki<select name="medicationTiming"><option value="">Wybierz (opcjonalnie)</option><option value="before">Przed lekami</option><option value="after">Po lekach</option><option value="na">Nie dotyczy</option></select></label>
+      </div>
       <label>Data i godzina<input name="at" type="datetime-local" required></label>
+      <label>Notatka (opcjonalna)<textarea name="note" maxlength="500" rows="2"></textarea></label>
       <div class="measurement-actions"><button type="submit">Zapisz pomiar</button><button type="button" data-cancel hidden>Anuluj edycję</button></div>
     </form>
     <div data-measure-results></div>

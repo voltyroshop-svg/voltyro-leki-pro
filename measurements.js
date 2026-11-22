@@ -1,5 +1,5 @@
 import {dayKey,timeKey} from './data.js';
-import {measurementsKey,emptyMeasurements,parseMeasurements,readMeasurement,glucoseIn,glucoseContexts,chartRows} from './measurements-data.js';
+import {measurementsKey,emptyMeasurements,parseMeasurements,readMeasurement,glucoseIn,glucoseContexts,chartRows,wellbeingLabels,medicationTimingLabels} from './measurements-data.js';
 
 const element = (tag,text) => {
   const node = document.createElement(tag);
@@ -14,7 +14,13 @@ const button = (label,callback) => {
 };
 const displayValue = (value,digits=2) => new Intl.NumberFormat('pl-PL',{maximumFractionDigits:digits}).format(value);
 const displayDate = value => value.slice(8,10)+'.'+value.slice(5,7)+'.'+value.slice(0,4)+' · '+value.slice(11);
-const fields = {pressure:['systolic','diastolic','pulse','note','at'],glucose:['value','unit','context','at']};
+const metadata=['at','note','wellbeing','medicationTiming'];
+const readings={pressure:['systolic','diastolic','pulse'],glucose:['value']};
+const fields={pressure:[...readings.pressure,...metadata],glucose:[...readings.glucose,'unit','context',...metadata]};
+const parseReading=raw=>{
+  const value=raw.trim().replace(',','.');
+  return /^\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value)?Number(value):NaN;
+};
 const titles = {pressure:'Ciśnienie i puls',glucose:'Poziom cukru'};
 
 export function loadMeasurements(storage=localStorage) {
@@ -83,7 +89,7 @@ export function setupMeasurements({announce,confirm}) {
     form.reset();
     editing[type] = entry?.id;
     for (const field of fields[type]) if (entry) form.elements[field].value = field==='value' ?
-      String(entry[field]).replace('.',',') : entry[field];
+      String(entry[field]).replace('.',',') : entry[field]??'';
     if (!entry) form.elements.at.value = dayKey(now)+'T'+timeKey(now);
     form.querySelector('[data-cancel]').hidden = !entry;
     form.querySelector('[type=submit]').textContent = entry ? 'Zapisz zmiany' : 'Zapisz pomiar';
@@ -136,7 +142,10 @@ export function setupMeasurements({announce,confirm}) {
       if (type==='glucose') {
         const other=item.unit==='mg/dl'?'mmol/l':'mg/dl';
         card.append(element('p',glucoseContexts[item.context]+' · ≈ '+displayValue(glucoseIn(item.value,item.unit,other),other==='mg/dl'?1:2)+' '+other));
-      } else if (item.note) card.append(element('p',item.note));
+      }
+      const context=[wellbeingLabels[item.wellbeing],medicationTimingLabels[item.medicationTiming]].filter(Boolean);
+      if(context.length)card.append(element('p',context.join(' · ')));
+      if(item.note)card.append(element('p',item.note));
       const actions=element('div');
       actions.className='measurement-actions';
       actions.append(button('Edytuj',()=>{
@@ -168,14 +177,24 @@ export function setupMeasurements({announce,confirm}) {
   for (const [type,form] of Object.entries(forms)) {
     reset(type);
     form.querySelector('[data-cancel]').onclick=()=>reset(type);
+    for(const control of form.querySelectorAll('[data-adjust]')) {
+      control.onclick=()=>{
+        const field=control.parentElement.querySelector('input');
+        const value=parseReading(field.value);
+        if(!Number.isFinite(value)||value<=0) {
+          field.focus();
+          return;
+        }
+        const step=type==='glucose'&&form.elements.unit.value==='mmol/l'?0.1:1;
+        const next=value+Number(control.dataset.adjust)*step;
+        if(next<=0||!Number.isFinite(next))return;
+        field.value=String(Number(next.toPrecision(15))).replace('.',',');
+      };
+    }
     form.onsubmit=event=>{
       event.preventDefault();
       const raw=Object.fromEntries(new FormData(form));
-      const numeric=type==='pressure'?['systolic','diastolic','pulse']:['value'];
-      for (const key of numeric) {
-        const value=raw[key].trim().replace(',','.');
-        raw[key]=/^\d+(?:\.\d+)?$/.test(value)?Number(value):NaN;
-      }
+      for(const key of readings[type])raw[key]=parseReading(raw[key]);
       try {
         const id=editing[type];
         const item=readMeasurement(type,{...raw,id:id??crypto.randomUUID()});
@@ -205,6 +224,14 @@ export function setupMeasurements({announce,confirm}) {
     }
     refresh();
   };
+  window.visualViewport?.addEventListener('resize',()=>{
+    const field=document.activeElement;
+    if(!field?.matches('.measurement-panel :is(input,textarea,select)'))return;
+    const viewport=window.visualViewport;
+    if(field.getBoundingClientRect().bottom>viewport.offsetTop+viewport.height-16) {
+      field.scrollIntoView({block:'center'});
+    }
+  });
   window.addEventListener('storage',event=>{
     if (event.key===measurementsKey||event.key===null) refresh();
   });
