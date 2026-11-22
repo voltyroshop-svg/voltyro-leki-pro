@@ -75,6 +75,117 @@ function plot(parent,rows,series,name,unit,days,now) {
   parent.append(figure);
 }
 
+// Ranges control the wheel only. Manual entry uses the existing measurement validation.
+const wheelRanges={
+  systolic:{max:300,start:120,scale:1},
+  diastolic:{max:200,start:80,scale:1},
+  pulse:{max:250,start:70,scale:1},
+  'mg/dl':{max:600,start:100,scale:1},
+  'mmol/l':{max:350,start:5.5,scale:10},
+};
+const readingText=value=>String(value).replace('.',',');
+
+function setupReadingPicker() {
+  const dialog=document.getElementById('reading-picker');
+  const title=dialog.querySelector('h2');
+  const wheel=dialog.querySelector('.reading-wheel');
+  const frame=wheel.parentElement;
+  const help=document.getElementById('reading-picker-help');
+  const manual=document.getElementById('reading-manual');
+  const manualLabel=document.getElementById('reading-manual-label');
+  const error=document.getElementById('reading-picker-error');
+  const toggle=dialog.querySelector('[data-picker-manual]');
+  let options,selected,scale,apply,trigger,whole;
+
+  function select(index,scroll=false) {
+    index=Math.min(options.length-1,Math.max(0,index));
+    if(selected!==index) {
+      options[selected]?.setAttribute('aria-selected','false');
+      selected=index;
+      options[selected].setAttribute('aria-selected','true');
+      wheel.setAttribute('aria-activedescendant',options[selected].id);
+    }
+    if(scroll)wheel.scrollTop=options[selected].offsetTop-options[0].offsetTop;
+  }
+
+  function syncScroll() {
+    if(!dialog.open||frame.hidden)return;
+    select(Math.round(wheel.scrollTop/options[0].getBoundingClientRect().height));
+  }
+
+  function showManual(show) {
+    frame.hidden=help.hidden=show;
+    manualLabel.hidden=!show;
+    toggle.textContent=show?'Wróć do wybieraka':'Wpisz ręcznie';
+    error.hidden=true;
+    if(show)manual.focus();
+    else {
+      select(selected,true);
+      wheel.focus();
+    }
+  }
+
+  wheel.addEventListener('scroll',syncScroll);
+  wheel.onclick=event=>{
+    const row=event.target.closest('[data-index]');
+    if(row)select(Number(row.dataset.index),true);
+  };
+  wheel.onkeydown=event=>{
+    const shifts={ArrowUp:-1,ArrowDown:1,PageUp:-10,PageDown:10};
+    if(!Object.hasOwn(shifts,event.key))return;
+    event.preventDefault();
+    select(selected+shifts[event.key],true);
+  };
+  toggle.onclick=()=>showManual(manualLabel.hidden);
+  dialog.querySelector('[data-picker-cancel]').onclick=()=>dialog.close();
+  dialog.addEventListener('close',()=>trigger?.focus({preventScroll:true}));
+  const done=dialog.querySelector('[data-picker-done]');
+  done.onclick=()=>{
+    syncScroll();
+    const value=manualLabel.hidden?(selected+1)/scale:parseReading(manual.value);
+    if(!Number.isFinite(value)||value<=0||whole&&!Number.isSafeInteger(value)) {
+      error.textContent=whole?'Wpisz dodatnią liczbę całkowitą.':'Wpisz dodatnią liczbę.';
+      error.hidden=false;
+      manual.focus();
+      return;
+    }
+    apply(readingText(value));
+    dialog.close();
+  };
+  manual.onkeydown=event=>{
+    if(event.key==='Enter'){event.preventDefault();done.click();}
+  };
+
+  return ({name,unit,current,recent,button,onChoose})=>{
+    const range=wheelRanges[unit||name];
+    whole=name!=='value';
+    scale=range.scale;
+    apply=onChoose;
+    trigger=button;
+    title.textContent=document.getElementById('label-'+name).textContent+(unit?' · '+unit:'');
+    manual.inputMode=whole?'numeric':'decimal';
+    manual.value=current;
+    options=Array.from({length:range.max},(_,index)=>{
+      const row=element('div',readingText((index+1)/scale));
+      row.id='reading-option-'+index;
+      row.dataset.index=index;
+      row.setAttribute('role','option');
+      row.setAttribute('aria-selected','false');
+      return row;
+    });
+    wheel.replaceChildren(...options);
+    selected=undefined;
+    const seed=parseReading(current)||recent||range.start;
+    select(Math.round(seed*scale)-1);
+    frame.hidden=help.hidden=false;
+    manualLabel.hidden=error.hidden=true;
+    toggle.textContent='Wpisz ręcznie';
+    dialog.showModal();
+    select(selected,true);
+    wheel.focus({preventScroll:true});
+  };
+}
+
 export function setupMeasurements({announce,confirm}) {
   const views = Object.fromEntries(Object.keys(fields).map(type=>[type,document.getElementById(type)]));
   const forms = Object.fromEntries(Object.keys(fields).map(type=>[type,views[type].querySelector('form')]));
@@ -82,6 +193,13 @@ export function setupMeasurements({announce,confirm}) {
   let chartUnit = 'mg/dl';
   let active = 'medicines';
   const editing = {};
+  const openPicker=setupReadingPicker();
+
+  function setReading(form,name,value) {
+    form.elements[name].value=value;
+    form.querySelector('[data-reading="'+name+'"]').textContent=value||'Wybierz';
+  }
+
 
   function reset(type,entry) {
     const form = forms[type];
@@ -90,6 +208,7 @@ export function setupMeasurements({announce,confirm}) {
     editing[type] = entry?.id;
     for (const field of fields[type]) if (entry) form.elements[field].value = field==='value' ?
       String(entry[field]).replace('.',',') : entry[field]??'';
+    for(const name of readings[type])setReading(form,name,entry?readingText(entry[name]):'');
     if (!entry) form.elements.at.value = dayKey(now)+'T'+timeKey(now);
     form.querySelector('[data-cancel]').hidden = !entry;
     form.querySelector('[type=submit]').textContent = entry ? 'Zapisz zmiany' : 'Zapisz pomiar';
@@ -177,23 +296,30 @@ export function setupMeasurements({announce,confirm}) {
   for (const [type,form] of Object.entries(forms)) {
     reset(type);
     form.querySelector('[data-cancel]').onclick=()=>reset(type);
-    for(const control of form.querySelectorAll('[data-adjust]')) {
+    for(const control of form.querySelectorAll('[data-reading]')) {
       control.onclick=()=>{
-        const field=control.parentElement.querySelector('input');
-        const value=parseReading(field.value);
-        if(!Number.isFinite(value)||value<=0) {
-          field.focus();
-          return;
-        }
-        const step=type==='glucose'&&form.elements.unit.value==='mmol/l'?0.1:1;
-        const next=value+Number(control.dataset.adjust)*step;
-        if(next<=0||!Number.isFinite(next))return;
-        field.value=String(Number(next.toPrecision(15))).replace('.',',');
+        const name=control.dataset.reading;
+        const unit=type==='glucose'?form.elements.unit.value:null;
+        let recent;
+        try {
+          const previous=loadMeasurements()[type].reduce((latest,row)=>
+            !latest||row.at>=latest.at?row:latest,null);
+          if(previous)recent=unit?glucoseIn(previous.value,previous.unit,unit):previous[name];
+        } catch {}
+        openPicker({name,unit,current:form.elements[name].value,recent,button:control,
+          onChoose:value=>setReading(form,name,value)});
       };
     }
+    if(type==='glucose')form.elements.unit.onchange=()=>setReading(form,'value','');
     form.onsubmit=event=>{
       event.preventDefault();
       const raw=Object.fromEntries(new FormData(form));
+      const missing=readings[type].find(name=>!raw[name]);
+      if(missing) {
+        announce('Wybierz wartość pomiaru.');
+        form.querySelector('[data-reading="'+missing+'"]').focus();
+        return;
+      }
       for(const key of readings[type])raw[key]=parseReading(raw[key]);
       try {
         const id=editing[type];
@@ -226,7 +352,7 @@ export function setupMeasurements({announce,confirm}) {
   };
   window.visualViewport?.addEventListener('resize',()=>{
     const field=document.activeElement;
-    if(!field?.matches('.measurement-panel :is(input,textarea,select)'))return;
+    if(!field?.matches('.measurement-panel :is(input,textarea,select), #reading-manual'))return;
     const viewport=window.visualViewport;
     if(field.getBoundingClientRect().bottom>viewport.offsetTop+viewport.height-16) {
       field.scrollIntoView({block:'center'});

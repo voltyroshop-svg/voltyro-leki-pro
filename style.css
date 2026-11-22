@@ -109,8 +109,25 @@ details[open]>summary::before{transform:rotate(45deg)}
 .pressure-readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}
 .reading-control{display:grid;gap:6px;min-width:0}
 .reading-control label{font-weight:700}
-.reading-stepper{display:grid;grid-template-columns:minmax(48px,3.25rem) minmax(0,1fr) minmax(48px,3.25rem);gap:6px;align-items:stretch}
-.reading-stepper button,.measurement-panel .measurement-actions button{min-height:52px;font-size:1.125rem}
-.reading-stepper button{font-size:1.5rem;padding:0;touch-action:manipulation}
-.measurement-panel .reading-stepper input{min-height:56px;font-size:1.5rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.reading-control>span{font-weight:700}
+.reading-choice{width:100%;min-height:58px;font-size:1.45rem;font-variant-numeric:tabular-nums;border-color:#6e5a8c}
+.measurement-panel .measurement-actions button{min-height:52px;font-size:1.125rem}
 .measurement-panel :is(input,select,textarea){font-size:1.0625rem;scroll-margin-block:16px}
+
+#reading-picker{width:min(92%,28rem);max-height:calc(100dvh - 2rem);overflow:auto;text-align:center}
+#reading-picker h2{font-size:1.3rem}
+#reading-picker p{margin-block:8px;color:var(--muted)}
+.reading-wheel-frame{--wheel-row:clamp(44px,10dvh,3.45rem);position:relative}
+.reading-wheel-frame::after{content:"";position:absolute;pointer-events:none;inset:calc(2 * var(--wheel-row)) 2px;
+  border-block:2px solid var(--violet);border-radius:8px}
+.reading-wheel{position:relative;height:calc(5 * var(--wheel-row));padding-block:calc(2 * var(--wheel-row));overflow-y:auto;
+  overscroll-behavior:contain;scroll-snap-type:y mandatory;background:#0c172b;border-radius:10px;touch-action:pan-y}
+.reading-wheel [role=option]{height:var(--wheel-row);display:grid;place-items:center;scroll-snap-align:center;
+  font-size:1.5rem;font-variant-numeric:tabular-nums;color:var(--muted);cursor:pointer;user-select:none}
+.reading-wheel [aria-selected=true]{font-weight:750;color:var(--text);background:#30274a}
+.reading-picker-actions{justify-content:center}
+.reading-picker-actions button{min-height:52px;flex:1}
+#reading-picker [data-picker-done]{background:#3b2c58;border-color:#a184c7}
+#reading-picker [data-picker-manual]{margin-top:8px;background:transparent;color:var(--muted)}
+#reading-manual-label:not([hidden]){display:grid;gap:6px}
+#reading-manual{width:100%;min-height:52px;font-size:1.25rem;text-align:center}

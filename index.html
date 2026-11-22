@@ -65,28 +65,19 @@
     <form data-measure-form="pressure">
       <div class="pressure-readings">
         <div class="reading-control">
-          <label for="reading-systolic">Górne (SYS) · mmHg</label>
-          <div class="reading-stepper">
-            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Górne (SYS) · mmHg">−</button>
-            <input id="reading-systolic" name="systolic" type="text" inputmode="numeric" autocomplete="off" required>
-            <button type="button" data-adjust="1" aria-label="Zwiększ: Górne (SYS) · mmHg">+</button>
-          </div>
+          <span id="label-systolic">Górne (SYS) · mmHg</span>
+          <button id="choose-systolic" class="reading-choice" type="button" data-reading="systolic" aria-haspopup="dialog" aria-labelledby="label-systolic choose-systolic">Wybierz</button>
+          <input name="systolic" type="hidden">
         </div>
         <div class="reading-control">
-          <label for="reading-diastolic">Dolne (DIA) · mmHg</label>
-          <div class="reading-stepper">
-            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Dolne (DIA) · mmHg">−</button>
-            <input id="reading-diastolic" name="diastolic" type="text" inputmode="numeric" autocomplete="off" required>
-            <button type="button" data-adjust="1" aria-label="Zwiększ: Dolne (DIA) · mmHg">+</button>
-          </div>
+          <span id="label-diastolic">Dolne (DIA) · mmHg</span>
+          <button id="choose-diastolic" class="reading-choice" type="button" data-reading="diastolic" aria-haspopup="dialog" aria-labelledby="label-diastolic choose-diastolic">Wybierz</button>
+          <input name="diastolic" type="hidden">
         </div>
         <div class="reading-control">
-          <label for="reading-pulse">Puls · uderz./min</label>
-          <div class="reading-stepper">
-            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Puls · uderz./min">−</button>
-            <input id="reading-pulse" name="pulse" type="text" inputmode="numeric" autocomplete="off" required>
-            <button type="button" data-adjust="1" aria-label="Zwiększ: Puls · uderz./min">+</button>
-          </div>
+          <span id="label-pulse">Puls · uderz./min</span>
+          <button id="choose-pulse" class="reading-choice" type="button" data-reading="pulse" aria-haspopup="dialog" aria-labelledby="label-pulse choose-pulse">Wybierz</button>
+          <input name="pulse" type="hidden">
         </div>
       </div>
       <div class="measurement-fields">
@@ -103,12 +94,9 @@
     <h2 id="glucose-title">Poziom cukru</h2>
     <form data-measure-form="glucose">
       <div class="reading-control">
-          <label for="reading-value">Wynik pomiaru</label>
-          <div class="reading-stepper">
-            <button type="button" data-adjust="-1" aria-label="Zmniejsz: Wynik pomiaru">−</button>
-            <input id="reading-value" name="value" type="text" inputmode="decimal" autocomplete="off" required>
-            <button type="button" data-adjust="1" aria-label="Zwiększ: Wynik pomiaru">+</button>
-          </div>
+          <span id="label-value">Wynik pomiaru</span>
+          <button id="choose-value" class="reading-choice" type="button" data-reading="value" aria-haspopup="dialog" aria-labelledby="label-value choose-value">Wybierz</button>
+          <input name="value" type="hidden">
         </div>
       <div class="measurement-fields">
         <label>Jednostka<select name="unit"><option>mg/dl</option><option>mmol/l</option></select></label>
@@ -136,6 +124,22 @@
   </details>
   <footer>To dziennik potwierdzeń. Brak zapisu nie oznacza pominięcia leku. Jeśli nie wiesz, czy dawka została przyjęta, postępuj zgodnie z zaleceniami lekarza lub farmaceuty.</footer>
 </main>
+<dialog id="reading-picker" aria-labelledby="reading-picker-title">
+  <h2 id="reading-picker-title"></h2>
+  <p id="reading-picker-help">Przewiń liczby lub dotknij wybranej wartości.</p>
+  <div class="reading-wheel-frame">
+    <div class="reading-wheel" role="listbox" tabindex="0" aria-labelledby="reading-picker-title" aria-describedby="reading-picker-help" autofocus></div>
+  </div>
+  <label id="reading-manual-label" hidden>Wartość
+    <input type="text" inputmode="decimal" autocomplete="off" id="reading-manual">
+  </label>
+  <p id="reading-picker-error" role="alert" hidden></p>
+  <div class="dialog-actions reading-picker-actions">
+    <button type="button" data-picker-cancel>Anuluj</button>
+    <button type="button" data-picker-done>Gotowe</button>
+  </div>
+  <button type="button" data-picker-manual>Wpisz ręcznie</button>
+</dialog>
 <dialog id="medicine-dialog" aria-labelledby="medicine-title">
   <h2 id="medicine-title">Dodaj lek</h2>
   <form id="medicine-form">
