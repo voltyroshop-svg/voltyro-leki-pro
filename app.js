@@ -1,8 +1,12 @@
 import {doses, emptyOrganizer, dayKey, timeKey, monthDays, moveMonth, organizerBackup, isTime,
   readOrganizer, storageKey, legacyStorageKey, plannedDoses, setDoseState} from './data.js';
 
+import {setupMeasurements,loadMeasurements} from './measurements.js';
+import {measurementsKey,parseMeasurements} from './measurements-data.js';
+
 const $ = id => document.getElementById(id);
 const preImportKey = storageKey + '.before-import';
+const preImportMeasurementsKey = measurementsKey + '.before-import';
 const fullDate = new Intl.DateTimeFormat('pl-PL', {dateStyle: 'full'});
 const monthName = new Intl.DateTimeFormat('pl-PL', {month: 'long', year: 'numeric'});
 const doseLabels = {morning: 'Rano', evening: 'Wieczorem'};
@@ -328,7 +332,8 @@ settings.addEventListener('submit', event => {
 
 $('export').addEventListener('click', () => {
   try {
-    const backup = new Blob([JSON.stringify(readData(), null, 2)], {type: 'application/json'});
+    const combined = {version: 3, organizer: readData(), measurements: loadMeasurements()};
+    const backup = new Blob([JSON.stringify(combined, null, 2)], {type: 'application/json'});
     const url = URL.createObjectURL(backup);
     const link = document.createElement('a');
     link.href = url;
@@ -349,16 +354,37 @@ $('file').addEventListener('change', async () => {
   if (!file) return;
   try {
     if (file.size > 2_000_000) throw new Error();
-    const restored = organizerBackup(await file.text(), dayKey(new Date()));
+    const raw = await file.text();
+    const input = JSON.parse(raw);
+    const restored = organizerBackup(input?.version===3?JSON.stringify(input.organizer):raw, dayKey(new Date()));
+    const measures = input?.version===3?parseMeasurements(input.measurements):null;
     showDialog('Przywrócić kopię?', [
       'Kopia zawiera ' + restored.medicines.length + ' leków i ' +
         new Set([...Object.keys(restored.days), ...Object.keys(restored.records)]).size + ' dni historii.',
-      'Import zastąpi bieżący zapis. Przed przywróceniem aplikacja zachowa lokalną kopię poprzedniego zapisu.',
+      measures ? 'Kopia zawiera pomiary: '+measures.pressure.length+' ciśnienia i '+measures.glucose.length+' cukru.' :
+        'Kopia zawiera tylko leki. Zapisane pomiary pozostaną na urządzeniu.',
+      'Import zastąpi dane objęte kopią i zachowa lokalny zapis sprzed przywrócenia.',
       'Zachowaj także własny eksport JSON, jeśli chcesz mieć kopię poza aplikacją.'
     ], () => {
-      if (save(() => restored, true)) {
+      let previous;
+      try {
+        if (measures) {
+          previous = localStorage.getItem(measurementsKey);
+          localStorage.setItem(preImportMeasurementsKey, previous ?? 'null');
+          localStorage.setItem(measurementsKey, JSON.stringify(measures));
+        }
+        if (!save(() => restored, true)) {
+          if (measures) {
+            if (previous === null) localStorage.removeItem(measurementsKey);
+            else localStorage.setItem(measurementsKey, previous);
+          }
+          return;
+        }
         populateSettings();
+        refreshMeasurements();
         announce('Przywrócono kopię zapasową.');
+      } catch {
+        announce('Nie udało się przywrócić kopii. Sprawdź dostęp do pamięci urządzenia.');
       }
     }, 'Przywróć kopię');
   } catch {
@@ -366,6 +392,7 @@ $('file').addEventListener('change', async () => {
   }
 });
 
+const refreshMeasurements = setupMeasurements({announce, confirm:showDialog});
 reloadData();
 populateSettings();
 render();

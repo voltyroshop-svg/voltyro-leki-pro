@@ -1,6 +1,6 @@
 const prefix = 'voltyro-leki-shell-';
-const version = prefix + '2';
-const shell = ['./', './index.html', './style.css', './app.js', './data.js', './manifest.webmanifest',
+const version = prefix + '3';
+const shell = ['./', './index.html', './style.css', './app.js', './data.js', './measurements.js', './measurements-data.js', './manifest.webmanifest',
   './favicon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const urls = new Set(shell.map(path => new URL(path, self.registration.scope).href));
 
