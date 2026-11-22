@@ -1,0 +1,11 @@
+{
+  "appId": "pl.voltyro.leki",
+  "appName": "VOLTYRO Leki PRO",
+  "webDir": "mobile-web",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_voltyro",
+      "iconColor": "#af2335"
+    }
+  }
+}

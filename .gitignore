@@ -1,0 +1,6 @@
+node_modules/
+mobile-web/
+
+# Signing keys
+*.keystore
+*.jks

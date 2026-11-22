@@ -1,4 +1,4 @@
-import {doses, emptyOrganizer, dayKey, timeKey, monthDays, moveMonth, organizerBackup, isTime,
+import {newRecordId,doses, emptyOrganizer, dayKey, timeKey, monthDays, moveMonth, organizerBackup, isTime,
   readOrganizer, storageKey, legacyStorageKey, plannedDoses, setDoseState} from './data.js';
 
 import {setupMeasurements,loadMeasurements} from './measurements.js';
@@ -47,6 +47,7 @@ function save(change, replace = false) {
     data = result;
     loaded = true;
     render();
+    document.dispatchEvent(new Event('voltyro:organizer-changed'));
     return true;
   } catch {
     announce('Nie udało się zapisać zmian na tym urządzeniu. Sprawdź dostęp do pamięci przeglądarki.');
@@ -155,7 +156,7 @@ function renderMedicines() {
   }
 }
 
-function addMedicineTime(time = '', id = crypto.randomUUID()) {
+function addMedicineTime(time = '', id = newRecordId()) {
   const row = element('div', null, 'medicine-time');
   const label = element('label', 'Godzina');
   const input = element('input');
@@ -210,7 +211,7 @@ medicineForm.addEventListener('submit', event => {
     const med = next.medicines.find(item => item.id === editedMedicineId && item.state !== 'archived');
     if (editedMedicineId && !med) throw new Error('Lek został usunięty');
     if (med) Object.assign(med, {name, dose, slots});
-    else next.medicines.push({id: crypto.randomUUID(), name, dose, slots, state: 'active'});
+    else next.medicines.push({id: newRecordId(), name, dose, slots, state: 'active'});
   })) {
     medicineDialog.close();
     $('manage-medicines').open = true;
@@ -333,11 +334,14 @@ settings.addEventListener('submit', event => {
 $('export').addEventListener('click', () => {
   try {
     const combined = {version: 3, organizer: readData(), measurements: loadMeasurements()};
-    const backup = new Blob([JSON.stringify(combined, null, 2)], {type: 'application/json'});
+    const json=JSON.stringify(combined,null,2);
+    const name='voltyro-leki-'+dayKey(new Date())+'.json';
+    if(!document.dispatchEvent(new CustomEvent('voltyro:export-backup',{cancelable:true,detail:{json,name}})))return;
+    const backup = new Blob([json], {type: 'application/json'});
     const url = URL.createObjectURL(backup);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'voltyro-leki-' + dayKey(new Date()) + '.json';
+    link.download = name;
     document.body.append(link);
     link.click();
     link.remove();
@@ -406,6 +410,6 @@ window.addEventListener('storage', event => {
 window.addEventListener('pageshow', () => updateDay());
 document.addEventListener('visibilitychange', () => { if (!document.hidden) updateDay(); });
 setInterval(() => updateDay(), 15_000);
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !globalThis.Capacitor?.isNativePlatform?.()) {
   navigator.serviceWorker.register('./sw.js').catch(() => announce('Nie udało się przygotować trybu offline.'));
 }

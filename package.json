@@ -1,0 +1,37 @@
+{
+  "name": "voltyro-leki-pro",
+  "version": "1.0.0",
+  "description": "Lokalny organizer leków i pomiarów oraz aplikacje Capacitor na iOS i Android.",
+  "scripts": {
+    "test": "node --test",
+    "mobile:build": "node scripts/build-mobile.mjs",
+    "mobile:sync": "npm run mobile:build && cap sync",
+    "android:apk": "npm run mobile:build && cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voltyroshop-svg/voltyro-leki-pro.git"
+  },
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/voltyroshop-svg/voltyro-leki-pro/issues"
+  },
+  "homepage": "https://github.com/voltyroshop-svg/voltyro-leki-pro#readme",
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/ios": "8.6.2",
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/share": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2",
+    "esbuild": "0.28.2"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  }
+}

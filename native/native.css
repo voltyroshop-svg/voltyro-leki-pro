@@ -1,0 +1,6 @@
+.native-reminders{margin-bottom:14px;padding:13px}
+.native-reminders button{min-height:52px}
+.native-reminders>p{margin-block:8px;color:var(--muted)}
+.native-reminders .medicine-card{margin-block:8px}
+.native-reminders [aria-pressed=true]{border-color:var(--green);color:var(--green)}
+.native-reminders [data-reminder-status]{min-height:1.5em}

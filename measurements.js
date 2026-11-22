@@ -1,4 +1,4 @@
-import {dayKey,timeKey} from './data.js';
+import {dayKey,timeKey,newRecordId} from './data.js';
 import {measurementsKey,emptyMeasurements,parseMeasurements,readMeasurement,glucoseIn,glucoseContexts,chartRows,wellbeingLabels,medicationTimingLabels} from './measurements-data.js';
 
 const element = (tag,text) => {
@@ -323,7 +323,7 @@ export function setupMeasurements({announce,confirm}) {
       for(const key of readings[type])raw[key]=parseReading(raw[key]);
       try {
         const id=editing[type];
-        const item=readMeasurement(type,{...raw,id:id??crypto.randomUUID()});
+        const item=readMeasurement(type,{...raw,id:id??newRecordId()});
         if (mutate(type,rows=>{
           if (id&&!rows.some(row=>row.id===id)) throw Error('Brak edytowanego pomiaru.');
           return [...rows.filter(row=>row.id!==item.id),item];
