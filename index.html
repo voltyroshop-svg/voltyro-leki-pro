@@ -21,6 +21,16 @@
     <div><h1>VOLTYRO <span>Leki PRO</span></h1><time id="today"></time></div>
   </header>
   <p id="notice" role="status" aria-live="polite" hidden></p>
+  <section id="pwaUpdate" class="panel pwa-update" hidden aria-labelledby="pwaUpdateHeading">
+    <h2 id="pwaUpdateHeading">Dostępna aktualizacja</h2>
+    <p>Zapisz otwartą edycję, zanim odświeżysz aplikację.</p>
+    <button id="applyPwaUpdate" type="button">Zaktualizuj aplikację</button>
+  </section>
+  <details id="pwaHelp" class="panel settings" hidden>
+    <summary>Instalacja na iPhonie i tryb offline</summary>
+    <p id="pwaInstallTip">W Safari wybierz Udostępnij, potem Dodaj do ekranu początkowego. Jeśli widzisz opcję Otwórz jako aplikację internetową, włącz ją i wybierz Dodaj.</p>
+    <p id="pwaStatus" role="status" aria-live="polite">Przygotowywanie trybu offline…</p>
+  </details>
   <nav class="health-nav" aria-label="Sekcje aplikacji">
     <button type="button" data-health-tab="medicines" aria-pressed="true" aria-controls="medicines">Moje leki</button>
     <button type="button" data-health-tab="pressure" aria-pressed="false" aria-controls="pressure">Ciśnienie</button>
