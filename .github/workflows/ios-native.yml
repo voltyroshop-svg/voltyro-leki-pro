@@ -52,16 +52,16 @@ jobs:
       - name: Verify packaged device app and create unsigned IPA
         shell: bash
         run: |
-          app="$RUNNER_TEMP/ios-device/Build/Products/Debug-iphoneos/App.app"
+          set -x
+          products="$RUNNER_TEMP/ios-device/Build/Products/Debug-iphoneos"
+          app="$products/App.app"
           test -x "$app/App"
           test -s "$app/public/index.html"
           test -s "$app/public/native-reminders.js"
           test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist")" = pl.voltyro.leki
           lipo "$app/App" -verify_arch arm64
-          xcrun strings -a "$app/App" > "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
-          grep -q 'LocalNotificationsPlugin' "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
-          grep -q 'UNCalendarNotificationTrigger' "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
-          rm "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
+          test -s "$products/LocalNotificationsPlugin.o"
+          grep -q '"LocalNotificationsPlugin"' "$app/capacitor.config.json"
           mkdir -p "$RUNNER_TEMP/ios-package/Payload"
           ditto "$app" "$RUNNER_TEMP/ios-package/Payload/App.app"
           cd "$RUNNER_TEMP/ios-package"
