@@ -57,8 +57,8 @@ jobs:
           test -s "$app/public/index.html"
           test -s "$app/public/native-reminders.js"
           test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist")" = pl.voltyro.leki
-          lipo -verify_arch arm64 "$app/App"
-          xcrun strings "$app/App" > "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
+          lipo "$app/App" -verify_arch arm64
+          xcrun strings -a "$app/App" > "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
           grep -q 'LocalNotificationsPlugin' "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
           grep -q 'UNCalendarNotificationTrigger' "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
           rm "$RUNNER_TEMP/ios-diagnostics/device-symbols.txt"
