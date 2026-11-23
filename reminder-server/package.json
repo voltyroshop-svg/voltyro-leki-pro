@@ -1,0 +1,8 @@
+{
+  "name": "voltyro-leki-reminder-server",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=24"},
+  "scripts": {"start":"node server.mjs","test":"node --test"},
+  "dependencies": {"web-push":"3.6.7"}
+}

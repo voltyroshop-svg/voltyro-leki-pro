@@ -132,6 +132,17 @@
     <div class="backup"><button id="export" type="button">Eksportuj JSON</button><button id="import" type="button">Importuj kopię</button><input id="file" type="file" accept=".json,application/json" hidden></div>
     <p>Dane są zapisywane wyłącznie na tym urządzeniu. Usunięcie danych aplikacji lub przeglądarki może spowodować utratę historii. Zachowaj plik kopii w prywatnym miejscu.</p>
   </details>
+  <section id="webReminders" class="panel settings" hidden aria-labelledby="webRemindersTitle">
+    <h2 id="webRemindersTitle">Przypomnienia</h2>
+    <p>Po włączeniu przypomnień serwer otrzyma godziny aktywnych leków, strefę czasową i subskrypcję tego urządzenia. Zmiany wymagają połączenia z internetem.</p>
+    <p id="webPushState"></p>
+    <div class="backup">
+      <button id="enableWebPush" type="button" disabled>Włącz powiadomienia</button>
+      <button id="testWebPush" type="button" disabled>Wyślij przypomnienie testowe</button>
+      <button id="disableWebPush" type="button" hidden>Wyłącz przypomnienia</button>
+    </div>
+    <p id="webPushResult" role="status" aria-live="polite"></p>
+  </section>
   <footer>To dziennik potwierdzeń. Brak zapisu nie oznacza pominięcia leku. Jeśli nie wiesz, czy dawka została przyjęta, postępuj zgodnie z zaleceniami lekarza lub farmaceuty.</footer>
 </main>
 <dialog id="reading-picker" aria-labelledby="reading-picker-title">

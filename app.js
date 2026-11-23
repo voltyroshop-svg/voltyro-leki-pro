@@ -1,3 +1,4 @@
+import {setupPwaPush} from './pwa-push.js';
 import {doses, emptyOrganizer, dayKey, timeKey, monthDays, moveMonth, organizerBackup, isTime,
   readOrganizer, storageKey, legacyStorageKey, plannedDoses, setDoseState} from './data.js';
 
@@ -47,6 +48,7 @@ function save(change, replace = false) {
     data = result;
     loaded = true;
     render();
+    document.dispatchEvent(new Event('voltyro:reminder-plan'));
     return true;
   } catch {
     announce('Nie udało się zapisać zmian na tym urządzeniu. Sprawdź dostęp do pamięci przeglądarki.');
@@ -401,6 +403,7 @@ window.addEventListener('storage', event => {
     reloadData();
     populateSettings();
     render();
+    document.dispatchEvent(new Event('voltyro:reminder-plan'));
   }
 });
 window.addEventListener('pageshow', () => updateDay());
@@ -408,6 +411,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) upda
 setInterval(() => updateDay(), 15_000);
 if (!globalThis.Capacitor?.isNativePlatform?.()) {
   $('pwaHelp').hidden=false;
+  setupPwaPush({medicines:()=>{if(!loaded)throw Error('Brak odczytu leków.');return data.medicines;}});
   if (navigator.standalone===true||matchMedia('(display-mode: standalone)').matches) {
     $('pwaInstallTip').hidden=true;
   }
