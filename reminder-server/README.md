@@ -18,3 +18,9 @@ GitHub Pages obsługuje interfejs i Service Workera. Planowanie oraz wysyłkę w
 - Powiadomienie pokazuje system telefonu według ustawień użytkownika. Sieć, tryb skupienia i usługa Push wpływają na doręczenie. Powiadomienie nie oznacza przyjęcia leku.
 
 Testy integracyjne wykonuje `npm test` w katalogu serwera. Testy PWA i serwera razem uruchamia z katalogu repozytorium `node --test test/*.test.mjs reminder-server/server.test.mjs`.
+
+## Oddzielna usługa Render
+
+Blueprint `render.yaml` w katalogu głównym gałęzi `feature/pwa-web-push` tworzy jedną usługę `voltyro-leki-reminders` we Frankfurcie. Uruchom go jako **nowy** Blueprint wyłącznie po zaakceptowaniu kosztu. Użyj odrębnej pary kluczy VAPID i zaszyfrowanego magazynu zmiennych środowiskowych tej usługi. Plik pod `/var/data/reminders.sqlite` i pliki pomocnicze SQLite pozostają na dedykowanym dysku 1 GB. Usługa działa w jednej instancji, a aktualizacja może na chwilę przerwać pracę harmonogramu.
+
+Po uruchomieniu sprawdź `/health` przez adres HTTPS Render oraz `/config` z nagłówkiem `Origin: https://voltyroshop-svg.github.io`. Sprawdź również, czy inna domena dostaje HTTP 403. Dopiero wtedy podłącz publiczny adres HTTPS w konfiguracji PWA na gałęzi `main` i zwiększ wersję cache Service Workera. Test na telefonie pozostaje próbą pojedynczego urządzenia wykonaną przez użytkownika.

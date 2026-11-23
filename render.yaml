@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: voltyro-leki-reminders
+    runtime: node
+    branch: feature/pwa-web-push
+    rootDir: reminder-server
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    autoDeployTrigger: 'off'
+    buildCommand: npm ci && npm test
+    startCommand: npm start
+    healthCheckPath: /health
+    disk:
+      name: voltyro-leki-reminders-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.22.1
+      - key: APP_ORIGIN
+        value: https://voltyroshop-svg.github.io
+      - key: REMINDER_DB
+        value: /var/data/reminders.sqlite
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false
