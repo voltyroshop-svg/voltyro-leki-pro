@@ -410,6 +410,56 @@ window.addEventListener('storage', event => {
 window.addEventListener('pageshow', () => updateDay());
 document.addEventListener('visibilitychange', () => { if (!document.hidden) updateDay(); });
 setInterval(() => updateDay(), 15_000);
-if ('serviceWorker' in navigator && !globalThis.Capacitor?.isNativePlatform?.()) {
-  navigator.serviceWorker.register('./sw.js').catch(() => announce('Nie udało się przygotować trybu offline.'));
+if (!globalThis.Capacitor?.isNativePlatform?.()) {
+  $('pwaHelp').hidden=false;
+  if (navigator.standalone===true||matchMedia('(display-mode: standalone)').matches) {
+    $('pwaInstallTip').hidden=true;
+  }
+  if ('serviceWorker' in navigator) {
+    void preparePwa().catch(()=>{
+      $('pwaStatus').textContent='Nie udało się przygotować trybu offline. Spróbuj ponownie przy aktywnym połączeniu.';
+    });
+  } else {
+    $('pwaStatus').textContent='Tryb offline jest niedostępny w tej przeglądarce.';
+  }
+}
+
+async function preparePwa() {
+  const worker=navigator.serviceWorker;
+  const registration=await worker.register('./sw.js',{updateViaCache:'none'});
+  const notice=$('pwaUpdate');
+  const apply=$('applyPwaUpdate');
+  const status=$('pwaStatus');
+  let applying=false;
+  const showUpdate=()=>{
+    notice.hidden=!registration.waiting||!worker.controller;
+  };
+  showUpdate();
+  registration.addEventListener('updatefound',()=>{
+    registration.installing?.addEventListener('statechange',showUpdate);
+  });
+  apply.onclick=()=>{
+    if(applying||!registration.waiting)return;
+    applying=true;
+    apply.disabled=true;
+    registration.waiting.postMessage('ACTIVATE_UPDATE');
+    setTimeout(()=>{
+      if(!applying)return;
+      applying=false;
+      apply.disabled=false;
+      if(!registration.waiting)location.reload();
+    },8000);
+  };
+  worker.addEventListener('controllerchange',()=>{
+    showUpdate();
+    if(applying){applying=false;location.reload();}
+  });
+  let checkedAt=Date.now();
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden||Date.now()-checkedAt<30*60_000)return;
+    checkedAt=Date.now();
+    void registration.update().catch(()=>{});
+  });
+  await worker.ready;
+  status.textContent='Aplikacja jest gotowa do działania offline. Zapisy pozostają na tym urządzeniu.';
 }
